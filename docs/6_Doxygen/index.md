@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Doxygen things
-nav_order: 5
+title: Doxygen
+nav_order: 1
 ---
 
 <div class="iframe-container">
