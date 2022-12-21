@@ -1,6 +1,6 @@
 ---
 layout: default
-title: API documentation (Doxygen)
+title: Doxygen
 nav_order: 5
 ---
 
