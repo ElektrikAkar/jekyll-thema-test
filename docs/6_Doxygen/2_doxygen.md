@@ -3,10 +3,21 @@ layout: default
 title: Doxygen
 nav_order: 5
 ---
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="1; url='../Doxygen/html/index.html'" />
+  </head>
+  <body>
+    <p>Please follow <a href="../Doxygen/html/index.html">this link for Doxygen documentation</a>.</p>
+  </body>
+</html>
 
+
+<!-- 
 <div class="iframe-container">
   <iframe src="../Doxygen/html/index.html" frameborder="0" allowfullscreen position="fixed" width="100%" height="1000px"></iframe>
-</div>
+</div> -->
 
 
 <!-- <div class="iframe-container">
