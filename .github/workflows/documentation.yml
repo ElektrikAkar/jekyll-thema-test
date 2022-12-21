@@ -23,7 +23,7 @@ jobs:
       - name: Build master with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: ./main
+          source: ./main/docs
           destination: ./_site
       # - name: Build preview with Jekyll
       #   uses: actions/jekyll-build-pages@v1
