@@ -4,11 +4,6 @@ title: Doxygen things
 nav_order: 5
 ---
 
-# This is Doxygen really:
-
-<iframe id="inlineFrameExample"
-    title="Inline Frame Example"
-    width="300"
-    height="200"
-    src="../Doxygen/html/index.html">
-</iframe>
+<body style="margin:0px;padding:0px;overflow:hidden">
+    <iframe src="../Doxygen/html/index.html" frameborder="0" style="overflow:hidden;height:150%;width:150%" height="150%" width="150%"></iframe>
+</body>
