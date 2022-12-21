@@ -27,7 +27,8 @@ jobs:
         with:
          # working-directory: 'dtwc/'
           doxyfile-path: 'docs/Doxyfile'
-      - run: mv ./build/Doxygen ./_site/Doxygen
+      - run: ls
+      - run: sudo mv ./build/Doxygen ./_site/Doxygen
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
