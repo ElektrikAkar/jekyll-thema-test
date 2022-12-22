@@ -28,7 +28,7 @@ jobs:
          # working-directory: 'dtwc/'
           doxyfile-path: 'docs/Doxyfile'
       - run: sudo sed -ri 's/<div id="projectname">(.*)/<div id="projectname"><a href="..\/..\/index.html">\1 <\/a>/g' ./build/Doxygen/html/index.html
-      - run: sudo mv ./build/Doxygen ./_site/Doxygen
+      - run: sudo mv ./build/Doxygen/html ./_site/Doxygen
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
