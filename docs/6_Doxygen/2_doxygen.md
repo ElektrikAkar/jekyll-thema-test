@@ -3,10 +3,9 @@ layout: default
 title: Doxygen
 nav_order: 5
 ---
-<!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="refresh" content="1; url='../Doxygen/html/index.html'" />
+    <meta http-equiv="refresh" content="0; url='../Doxygen/html/index.html'" />
   </head>
   <body>
     <p>Please follow <a href="../Doxygen/html/index.html">this link for Doxygen documentation</a>.</p>
