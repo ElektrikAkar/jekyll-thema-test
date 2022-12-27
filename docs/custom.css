@@ -1,10 +1,9 @@
 html {
     /* override light-mode variables here */
    
-   --font-family:"Lato",BlinkMacSystemFont,"Segoe UI",Helvetica,sans-serif
    --side-nav-background:#002147;
-/*    --side-nav-foreground:#fff;
+   --side-nav-foreground:#fff;
    --header-foreground:#fff;
-     */
+    
 
 }
