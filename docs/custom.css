@@ -1,5 +1,7 @@
 html {
     /* override light-mode variables here */
+   
    --side-nav-background:#002147;
+   --side-nav-foreground:#fff;
 
 }
