@@ -2,10 +2,10 @@ html {
     /* override light-mode variables here */
    
     --primary-color:#002147;
-    
-/*    --side-nav-background:#002147;
-   --side-nav-foreground:#fff;
-   --header-foreground:#fff; */
+    --primary-light-color: #002147;
+    --side-nav-background:#002147;
+/*    --side-nav-foreground:#fff;
+   --header-foreground:#fff;  */
     
 
 }
