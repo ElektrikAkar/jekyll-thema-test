@@ -1,9 +1,11 @@
 html {
     /* override light-mode variables here */
    
-   --side-nav-background:#002147;
+    --primary-color:#002147;
+    
+/*    --side-nav-background:#002147;
    --side-nav-foreground:#fff;
-   --header-foreground:#fff;
+   --header-foreground:#fff; */
     
 
 }
