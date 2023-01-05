@@ -5,6 +5,7 @@ html {
     --header-background:#002147;
     --searchbar-background:#002147;
     --toc-background:#002147;
+    --side-nav-foreground:#fff;
     
 /*     --primary-color:#002147;
     --primary-light-color: #002147;
@@ -18,7 +19,5 @@ html {
     color: #fff;
 }
 
-#nav-tree a {
-    color: #fff;   
-}
+
 
