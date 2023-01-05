@@ -13,13 +13,13 @@ html {
     --header-foreground:#fff;  */
     
 
+    #titlearea {
+    color: #fff;
+    }
+
+    #nav-tree a {
+    color: #fff;   
+    }
+
 }
 
-#titlearea {
-    color: #fff;
-}
-
-#nav-tree a {
-    color: #fff;
-    
-}
