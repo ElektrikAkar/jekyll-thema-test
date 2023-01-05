@@ -11,15 +11,14 @@ html {
     --side-nav-background:#002147;
     --side-nav-foreground:#fff;
     --header-foreground:#fff;  */
-    
 
-    #titlearea {
+}
+
+#titlearea {
     color: #fff;
-    }
+}
 
-    #nav-tree a {
+#nav-tree a {
     color: #fff;   
-    }
-
 }
 
