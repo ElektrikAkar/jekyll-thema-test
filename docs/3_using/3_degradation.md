@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Degradation
+title: Individual Classes
 nav_order: 3
 ---
 
