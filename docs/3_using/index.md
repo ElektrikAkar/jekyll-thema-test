@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Usage
+title: Pack Simulation
 nav_order: 1
 ---
 
