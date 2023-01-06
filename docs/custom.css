@@ -7,6 +7,7 @@ html {
     --toc-background:#002147;
     --side-nav-foreground:#fff;
     --header-foreground:#fff;
+    --searchbar-foreground:#fff;
 
 #titlearea {
     color: #fff;
