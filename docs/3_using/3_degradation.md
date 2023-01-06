@@ -177,8 +177,8 @@ Procedure is a very ‘loose’ class (as in, it has got very few class variable
 - Use case age: Simulate more realistic ageing, in this case by doing 2 cycles a day and resting in between
 
 ***Auxiliary functions***
--storeThroughput: per ‘action’ (e.g. a charge), store total battery charge and energy, losses in the converter, energy to run the thermal management system
--balance: bring all cells back to the same voltage
+- storeThroughput: per ‘action’ (e.g. a charge), store total battery charge and energy, losses in the converter, energy to run the thermal management system
+- balance: bring all cells back to the same voltage
 
 ***check-up: done both for Cells and Modules. Completely analogous so I only explain the Cells one***
 - getCells: from the StorageUnit, extract all the cells and put them in a Vector
