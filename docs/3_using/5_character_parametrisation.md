@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Thermal model
+title: Thermal Model
 nav_order: 5
 ---
 
