@@ -18,30 +18,48 @@ The Cycler will set a certain current to the total Battery (which is the current
 ```mermaid
 flowchart LR
     subgraph Cycler
-    A[su->setCurrent(Itotal)]
+    A["su->setCurrent(I_total)"]
     end
     subgraph Battery
-    B[Call Module_s::setCurrent(Itotal)]
+    B["Call
+        Module_s::setCurrent(I_total)"]
     end
     subgraph Module_s
-    C[For each parallel module, call Module_p::setCurrent(Itotal)]
+    C["For each parallel 
+        module call 
+        Module_p::setCurrent(I_total)"]
     end
     subgraph Module_p
-    D1[Calculate currents in all cells in module 1 and call Cell::setCurrent(Icell)]
-    D2[...]
-    D3[Calculate currents in all cells in module N and call Cell::setCurrent(Icell)]
+    D1["Calculate currents in all 
+        cells in module 1 and call
+        Cell::setCurrent(I_cell)"]
+    D2["..."]
+    D3["Calculate currents in all 
+        cells in module N and call
+        Cell::setCurrent(I_cell)"]
     end
     subgraph Cell
-    E1[Calculate currents in all cells in module 1 and call Cell::setCurrent(Icell)]
-    E2[...]
-    E3[Calculate currents in all cells in module N and call Cell::setCurrent(Icell)]
-    E4[...]
-    E5[Calculate currents in all cells in module 1 and call Cell::setCurrent(Icell)]
-    E6[...]
-    E7[Calculate currents in all cells in module N and call Cell::setCurrent(Icell)]
+        subgraph Cells of module 1
+            E1["Calculate currents in all
+                cells in module 1 and call 
+                Cell::setCurrent(Icell)"]
+            E2["..."]
+            E3["Calculate currents in all
+                cells in module M and call 
+                Cell::setCurrent(Icell)"]
+        end
+    E4["..."]
+    E5["Calculate currents in all
+        cells in module N and call 
+        Cell::setCurrent(Icell)"]
+    E6["..."]
+    E7["Calculate currents in all
+        cells in module N and call 
+        Cell::setCurrent(Icell)"]
     end
     A-->B
     B-->C
+    C-->D1 & D2 & D3
     D1-->E1 & E2 & E3
     D2-->E4
     D3-->E5 & E6 & E7
