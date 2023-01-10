@@ -65,6 +65,7 @@ flowchart LR
     D3-->E5 & E6 & E7
 ```
 
+![](img/setCurrent.svg){:width="100%" }
 ![](img/setting_current.png){:width="60%" }
 
 ***Getting the voltage***
