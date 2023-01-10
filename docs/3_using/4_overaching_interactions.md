@@ -15,6 +15,38 @@ This section explains how currents and voltages are calculated throughout the ba
 
 The Cycler will set a certain current to the total Battery (which is the current on the DC bar), and the Battery will transfer this command to its Module. Then Modules are responsible for allocating this current to their ‘children’ (i.e. the things of which this module is made up). So the Module_s will set this current to all parallel modules. Then each Module_p will allocate the total current to their individual cells to ensure the 5 cell voltages of each parallel module are the same, while the sum of the 5 cell currents equals the total current. This is graphically shown below, where blue arrows are invoking functions to ‘lower levels’.
 
+```mermaid
+flowchart LR
+    subgraph Cycler
+    A[su->setCurrent(Itotal)]
+    end
+    subgraph Battery
+    B[Call Module_s::setCurrent(Itotal)]
+    end
+    subgraph Module_s
+    C[For each parallel module, call Module_p::setCurrent(Itotal)]
+    end
+    subgraph Module_p
+    D1[Calculate currents in all cells in module 1 and call Cell::setCurrent(Icell)]
+    D2[...]
+    D3[Calculate currents in all cells in module N and call Cell::setCurrent(Icell)]
+    end
+    subgraph Cell
+    E1[Calculate currents in all cells in module 1 and call Cell::setCurrent(Icell)]
+    E2[...]
+    E3[Calculate currents in all cells in module N and call Cell::setCurrent(Icell)]
+    E4[...]
+    E5[Calculate currents in all cells in module 1 and call Cell::setCurrent(Icell)]
+    E6[...]
+    E7[Calculate currents in all cells in module N and call Cell::setCurrent(Icell)]
+    end
+    A-->B
+    B-->C
+    D1-->E1 & E2 & E3
+    D2-->E4
+    D3-->E5 & E6 & E7
+```
+
 ![](img/setting_current.png){:width="60%" }
 
 ***Getting the voltage***
