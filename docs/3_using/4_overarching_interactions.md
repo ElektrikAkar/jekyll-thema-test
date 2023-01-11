@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Overaching interactions
+title: Overarching interactions
 nav_order: 4
 ---
 
