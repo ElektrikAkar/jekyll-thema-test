@@ -17,7 +17,7 @@ So in short, the heat transfer is a simple lumped thermal model which could be r
 
 The total thermal system of an (outer) module, consisting of three (nested) modules, each having three cells is shown below. The thermal design is entirely hierarchical, just like the electrical design.
 
-![](img/thermal_system.png){:width="60%" }
+![](img/thermal_equivalent.svg){:width="100%" }
 
 
 The cooling from the module to the cells is convective with forced air (hA), the transfer between cells is conductive (kA). Note that cells in the middle of a stack get conductive heat transfer from 2 (hot) cells, one on either side. Cells at the ends of the stack (i.e. the first and last) get conductive heat from one (hot) cell, and on the other side from the cool edge of the module, which is assumed to be at the temperature of the coolant. So the thermal resistances between the module and edge-cells are (hA in parallel with kA) while the resistances between the module and the middle cells are only hA (and the ones between cells are kA). Note also that h >> k.
