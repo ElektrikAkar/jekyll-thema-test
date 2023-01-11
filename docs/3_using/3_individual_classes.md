@@ -17,51 +17,54 @@ Defines the functions which must be implemented by all other classes. They can b
 - Data storage: storing certain data from the simulation which can be plotted later
 - Auxiliary: e.g. getting the ID string of this StorageUnit, getting the parent (Module to which this StorageUnit is connected)
 
-Note that there are two voltage limits: Vmin/Vmax and VMIN/VMAX. The former are the regular voltage limits outside of which an SU should not be used (e.g. 2.7V and 4.2V). However, due to the discrete time stepping and imperfect external functions (e.g. CV in Cycler), these limits might occasionally be exceeded by a small margin. SU will report to higher levels that they have exceeded these limits, but they will keep working.
+Note that there are two voltage limits: `Vmin`/`Vmax` and `VMIN`/`VMAX`. The former are the regular voltage limits outside of which an SU should not be used (e.g. 2.7V and 4.2V). However, due to the discrete time stepping and imperfect external functions (e.g. `CV` in `Cycler`), these limits might occasionally be exceeded by a small margin. SU will report to higher levels that they have exceeded these limits, but they will keep working.
 
-VMIN and VMAX are the ‘safety cut-off’ limits. Under no circumstance should these be exceeded, for instance because you risk going outside of the OCV curve (e.g. the surface concentration becomes <0 or > 1). If SU exceed these limits, they throw an error and the simulation is usually interrupted.
+`VMIN` and `VMAX` are the ‘safety cut-off’ limits. Under no circumstance should these be exceeded, for instance because you risk going outside of the OCV curve (e.g. the surface concentration becomes <0 or > 1). If `SU` exceed these limits, they throw an error and the simulation is usually interrupted.
 
 ### Cell
 
+Is an Interface class for all Cells. 
 
-Implements StorageUnit for a single cell. It uses the linear ‘bucket model’ (OCV is a linear function of the SoC which is the integral of the current). There is no degradation, and no thermal model (i.e. temperature is constant).
+`Cell_Bucket` also implements all the data storage functions. Cells store their current, voltage, SoC, T, total cumulative charge and energy throughput and total cumulative time. Depending on the settings in `settings.hpp`, they store these value after x number of time steps and then write long csv files [note that this takes a lot of time and generated huge amounts of data]. Alternatively, they can store the ‘statisticis’, i.e. keep some histogram of what fraction of time they were at a given current, `voltage`, `SOC` or `T`
 
-Cell also implements all the data storage functions. Cells store their current, voltage, SoC, T, total cumulative charge and energy throughput and total cumulative time. Depending on the settings in Global.h, they store these value after x number of time steps and then write long csv files [note that this takes a lot of time and generated huge amounts of data]. Alternatively, they can store the ‘statisticis’, i.e. keep some histogram of what fraction of time they were at a given current, voltage, SoC or T
+### Cell_Bucket
 
-### ECM Cell
+Implements `StorageUnit for a single cell. It uses the linear ‘bucket model’ (OCV is a linear function of the SoC which is the integral of the current). There is no degradation, and no thermal model (i.e. temperature is constant).
 
-Simulates an equivalent circuit model for a single cell. Again, no thermal model and no degradation. Data storage is not implemented (i.e. the implementation from Cell will be used)
+### Cell_ECM
+
+Simulates an equivalent circuit model for a single cell. Again, no thermal model and no degradation. Data storage is not implemented (i.e. the implementation from Cell will be used). Currently, it only has one RC pair which will be generalised to `N` RC pairs in future. 
 
 ### SPM Cell
 
-This is a large class which implements a cell according to a single particle model. It includes a thermal model (simulating how a cell heats up due to internal heat generation and heat exchange with the cell’s environments, the former is calculated by the cell, the latter is given by the parent Module), and various degradation models.
+This is a large class which implements a cell according to a single particle model. It includes a thermal model (simulating how a cell heats up due to internal heat generation and heat exchange with the cell’s environments, the former is calculated by the cell, the latter is given by the parent `Module`), and various degradation models.
 
-It extends the data storage a bit by keeping track of some states related to the degradation
+It extends the data storage a bit by keeping track of some states related to the degradation.
 
 ### Module 
 
-This is an ‘abstract class’, i.e. some functions are implemented while others are only defined (and implementations are given in the child classes) to simulate a generic module. The functions which have the same implementation for series and parallel connected cells are implemented in Module (such as thermal model). Functions with different implementations (e.g. getV) are only defined here in Module.
+This is an _abstract class_, i.e. some functions are implemented while others are only defined (and implementations are given in the child classes) to simulate a generic module. The functions which have the same implementation for series and parallel connected cells are implemented in Module (such as thermal model). Functions with different implementations (e.g. `Module::V`) are only defined here in Module.
 
-The most important field is an array of (shared pointers to) StorageUnits. These are the elements connected to this module (and are referred to as the ‘child Sus’). Due to the pointers and polymorphism, the code works for both cells (i.e. cells are connected in series/parallel to form this module) or other modules (i.e. you connect different modules in series/parallel to form a higher level module). Because all functions of SU are defined as virtual, the implementation of the most specific class will be called at runtime (e.g. if the module consists of SPM cells and you call SU[i]->getV(), then the function getV() from Cell_SPM will be executed). This is called ‘dynamic binding’.
+The most important field is an array of StorageUnits. These are the elements connected to this module (and are referred to as the ‘child Sus’). Due to the pointers and polymorphism, the code works for both cells (i.e. cells are connected in series/parallel to form this module) or other modules (i.e. you connect different modules in series/parallel to form a higher level module). Because all functions of SU are defined as virtual, the implementation of the most specific class will be called at runtime (e.g. if the module consists of SPM cells and you call `SU[i]->V()`, then the function `V()` from `Cell_SPM` will be executed).
 
-Most implemented functions are relatively simple, e.g. getting the voltage of all the child SUs or getting an array with the state of all child SUs. The most important implemented function is the thermal model. For every child SU, the module will find the adjacent SUs and pass on their temperatures and thermal resistances to the child SU, such that it can calculate its thermal balance. This has to be done because child SUs don’t know their neighbouring SUs, so the Module needs to tell them “ you are surrounded by these elements” so the heat exchange between different elements can be computed. Note that to ensure consistency, child SUs don’t update their temperature until all heat exchanges have been computed (else heat exchange between two elements would be not symmetrical).
+Most implemented functions are relatively simple, e.g. getting the voltage of all the child SUs or getting an array with the state of all child SUs. The most important implemented function is the thermal model. For every child SU, the module will find the adjacent SUs and pass on their temperatures and thermal resistances to the child SU, such that it can calculate its thermal balance. This has to be done because child SUs don’t know their neighbouring SUs, so the Module needs to tell them _you are surrounded by these elements_ so the heat exchange between different elements can be computed. Note that to ensure consistency, child SUs don’t update their temperature until all heat exchanges have been computed (else heat exchange between two elements would be not symmetrical).
 
-Modules also cool their child SUs. For that, they have an instance of a CoolSystem. The details are given later, but basically the coolsystem has a temperature, thermal mass and a controllable convective cooling constant. When informing child SUs of their neighbouring elements, the coolsystem acts like a neighbouring element at lower temperature and with a low thermal resistance, such that heat will flow from the cell to the coolsystem. The temperature of the coolsystem is only updated after all child-SU temperatues have been computed, so all child SUs get the same amount of cooling independent on their position in the module. The only exception are the 1st and last child SU, which share one surface with a cell and another with the Module. So the heat exchange between those two cells and the module is the sum of the (convective) cooling and the (conductive) contact on one side of the cell.
+Modules also cool their child SUs. For that, they have an instance of a `CoolSystem`. The details are given later, but basically the coolsystem has a temperature, thermal mass and a controllable convective cooling constant. When informing child SUs of their neighbouring elements, the coolsystem acts like a neighbouring element at lower temperature and with a low thermal resistance, such that heat will flow from the cell to the coolsystem. The temperature of the coolsystem is only updated after all child-SU temperatues have been computed, so all child SUs get the same amount of cooling independent on their position in the module. The only exception are the 1st and last child SU, which share one surface with a cell and another with the Module. So the heat exchange between those two cells and the module is the sum of the (convective) cooling and the (conductive) contact on one side of the cell.
 
-Modules can store cycling data (current, voltage, temperature at every time step), but no ‘usage statistics’. This can be implemented if desired, but I didn’t see the goal of doing this. However, the storeData function will invoke the storeData function on all child SUs, as well as on the coolsystem (both of which can store statistics).
+Modules can store cycling data (current, voltage, temperature at every time step), but no _usage statistics_. This can be implemented if desired. However, the storeData function will invoke the storeData function on all child SUs, as well as on the coolsystem (both of which can store statistics).
 
 A final piece of functionality added are contact resistances. Every cell can be connected to this module with a certain additional resistance, although the implementation is different for series vs parallel modules.
 
 ### Module_s
 This class defines a series-connected module. This means that the module voltage is the sum of the voltages of each child SU, while all child Sus have the same current. All functions are fairly straightforward. See below about multithreading.
 
-Contact resistances are in series with the cells as indicated below (where R_i is contact resistance i, and SU_i is child SU i). Note that each SU has its own resistance (which will be in series with the contact resistance)
+Contact resistances are in series with the cells as indicated below (where `R_i` is contact resistance i, and SU_i is child SU i). Note that each SU has its own resistance (which will be in series with the contact resistance)
 
 ![](img/module_s.png){:width="60%" }
 
-Time integration in modules works by calling the time integration functions of the child SUs (which will eventually end up in the time integration functions of Cells or SPM cells). Time integration can take multiple time steps at once, which means we allow every child SU to take this number of time steps ‘on its own’ before returning to the module code. So if we want to take 10 time steps in a series module, we first take 10 time steps in SU1, then 10 steps in SU2, etc. until we have taken 10 time steps in the last SU.
+Time integration in modules works by calling the time integration functions of the child SUs (which will eventually end up in the time integration functions of Cells or SPM cells). Time integration can take multiple time steps at once, which means we allow every child SU to take this number of time steps _on its own_ before returning to the module code. So if we want to take 10 time steps in a series module, we first take 10 time steps in SU1, then 10 steps in SU2, etc. until we have taken 10 time steps in the last SU.
 
-The code uses Boost to enable multithreading: time integration of the different child SUs is completely independent of each other, so a new thread is created per child SU, and the child SU is integrated over N time steps on that separate thread. When each child has completed its time integrations, the code returns to the main thread. If an error happens during time integration on a separate thread, a flag is set in the Module, such that after returning to the main thread we know something went wrong and can deal with it appropriately. (you cannot catch errors thrown in different threads)
+Currently multithreading option is not working but when it works time integration of the different child SUs will be completely independent of each other, so a new thread is created per child SU, and the child SU is integrated over N time steps on that separate thread. When each child has completed its time integrations, the code returns to the main thread. If an error happens during time integration on a separate thread, a flag is set in the Module, such that after returning to the main thread we know something went wrong and can deal with it appropriately.
 
 Multithreading does not make sense for small modules (modules made of cells) since the overhead to create a thread, share memory locations, etc. is much larger than the computational requirement of integrating a single cell for 10 steps. However, if you have hierarchical modules (modules made of modules made of … made of cells), then using the multithreading at the ‘outer’ module will speed up the calculation dramatically (since 10 time steps of its child SUs might involve taking 10 time steps on hundreds or thousands of cells).
 
@@ -70,9 +73,9 @@ Multithreading does not make sense for small modules (modules made of cells) sin
 
 This function defines a parallel-connected module. This means that the voltage of all child SUs has to be the same (or within a defined tolerance), while the module current is the sum of the currents to each child SU.
 
-contact resistances are in parallel branches in the module. The terminals of the parallel module are before the first cell as indicated below. This means that the entire module current goes through R1, the current through R2 is the sum of the currents through SU2, SU3 and SU4. Similarly for all resistances. Note that an SU will have its own resistance (which will be in series with the OCV of the SUs). 
+Contact resistances are in parallel branches in the module. The terminals of the parallel module are before the first cell as indicated below. This means that the entire module current goes through R1, the current through R2 is the sum of the currents through SU2, SU3 and SU4. Similarly for all resistances. Note that an SU will have its own resistance (which will be in series with the OCV of the SUs). 
 In reality, there might also be resistances at the other side of the module (i.e. on the bottom horizontal line in the circuit below), but these can be lumped into the resistances on top since exactly the same current will pass through them.
-Note that cell currents are always the ‘total’ current passing through that cell (i.e. the sum of the current ‘to the module terminal’ and the current ‘to the other cells to balance the voltages’).
+Note that cell currents are always the _total_ current passing through that cell (i.e. the sum of the current _to the module terminal_ and the current _to the other cells to balance the voltages_).
 
 
 ![](img/module_p.png){:width="60%" }
@@ -85,7 +88,7 @@ There are three functions with a significant functionality:
 Note that it is not exactly a PI controller, because the amount of current changed is not directly a function of the voltage error. This is necessary because the OCV curve is very steep at some points while almost flat at others (so the same change in current will have a very different effect on the voltage depending on where in the OCV curve you are), cell resistances are not constant, and different cells can be at different states (e.g. a module with 1 degraded cell and 4 ‘good ones’, then the same current change in the degraded cell will have a much larger effect than the same change in a ‘good’ cell.	
 Instead, the amount of current swapped between the cells with the highest and lowest voltage is a small fraction of the cell current. The fraction is small enough to ensure stability in almost all cases, but it does mean that if the error is large you will need a few iterations to reach the appropriate correction. The fraction will however decrease if the voltage error decreases, but according to a pre-defined step-wise approach, which ensures convergence and stability in almost all cases.
 
-2. **setI:** This is the function to change the module current, which obviously needs to be done carefully. The approach in this function is simple: allocate the current uniformly and then call redistributeI() to equalise the voltages. This works well if the differences between the child SUs are small, but it might fail for large differences (e.g. one very degraded cell with 8 good ones, then giving 1/9th of the total current to the degraded cell might push it over its voltage limit). In this case, we swap to the approach from the function below (setI_iterative)
+2. **setCurrent:** This is the function to change the module current, which obviously needs to be done carefully. The approach in this function is simple: allocate the current uniformly and then call redistributeI() to equalise the voltages. This works well if the differences between the child SUs are small, but it might fail for large differences (e.g. one very degraded cell with 8 good ones, then giving 1/9th of the total current to the degraded cell might push it over its voltage limit). In this case, we swap to the approach from the function below (setI_iterative)
 
 3. **setI_iterative:** This function is more cautious than the previous one, but also takes much longer to compute. It follows a three-step approach (the last one of which is an iteration) to distribute the current.
 - Estimate the resistance of each cell: assume the current would split equally between all cells, distribute half the needed change in current. E.g. our module has 2 cells which initially each have a current of 1A, and we are trying to set the module current to 6A; in this example we set the current of each cell to 2A. Then get the voltage of each child SU, and use this value to estimate the resistance (dV/dI). Note that this resistance is different from the DC resistance of an SU because it will include kinetic (and surface concentration) effects of SPM cells.
@@ -96,7 +99,7 @@ Time integration in parallel modules is similar to series modules, i.e. you can 
 
 ### Battery
 
-The Battery class represent a ‘container’. It has one module (which has all cells connected to it), an inverter to convert the variable DC voltage to a fixed AC voltage, and an HVAC cooling system.
+The Battery class represent a _container_. It has one module (which has all cells connected to it), an inverter to convert the variable DC voltage to a fixed AC voltage, and an HVAC cooling system.
 
 In most ways it behaves like a module, and most functions are direct pass-throughs (i.e. simply invoked on the Module). Note in particular that the getI() and getV() functions return the values of the Module, i.e. the (variable) DC voltage and DC current. This must be so because Battery is a type of StorageUnit, so e.g. we must be able to charge at a given current to a given voltage (and if getV returns the constant AC voltage, then the charge will never stop).
 
@@ -105,7 +108,7 @@ The converter is an instance of the class Converter, and the only function it ha
 The thermal model of the Battery is very similar to that of a Module, with three differences:
 - There is an extra source of heat generation from the converter (as well as the heat from the Module).
 - A Battery cannot have a parent or neighbouring units. It is a stand-alone unit which only exchanges heat with its Module
-- To cool the Battery, it must have an HVAC Coolsystem. It is like a coolsystem, but with the addition of an AC unit which can exchange heat with the environment. A conventional coolsystem must be cooled by the parent of the module to which the coolsystem is connected. Since a Battery does not have a parent, this coolsystem must be able to cool itself. See Coolsystem_HVAC for more info.
+- To cool the Battery, it must have an `HVAC Coolsystem`. It is like a coolsystem, but with the addition of an AC unit which can exchange heat with the environment. A conventional coolsystem must be cooled by the parent of the module to which the coolsystem is connected. Since a Battery does not have a parent, this coolsystem must be able to cool itself. See Coolsystem_HVAC for more info.
 
 ### CoolSystem
 
@@ -118,10 +121,10 @@ CoolSystems can control the flow rate (e.g. by controlling a fan), which will in
 4.  Proportional to the temperature of the hottest child SU (i.e. local temperature)
 5.  Proportional to the temperature of the hottest cell ultimately connected to this Module
 
-if this Coolsystem is at the bottom layer (i.e. its Module has cells), this is the same as strategy 2. But if this Module is a higher level one (i.e. its child SUs are also Modules), then strategy 2 acts based on the temperature of the Modules while 3 goes to the Cells.
-The ‘local’ control (i.e. 2 and 4) must use the temperature of the children and not the temperature of the coolsystem because if the coolsystem is off, it won’t cool the cells so it won’t heat up itself. Therefore if we would use the temperature of the coolsystem, it would never switch on and the child SUs would overheat.
+if this `Coolsystem` is at the bottom layer (i.e. its `Module` has cells), this is the same as strategy 2. But if this Module is a higher level one (i.e. its child SUs are also Modules), then strategy 2 acts based on the temperature of the Modules while 3 goes to the Cells.
+The _local_ control (i.e. 2 and 4) must use the temperature of the children and not the temperature of the coolsystem because if the coolsystem is off, it won’t cool the cells so it won’t heat up itself. Therefore if we would use the temperature of the coolsystem, it would never switch on and the child SUs would overheat.
 
-A coolsystem only cools the child SUs and must be cooled by the Coolsystem of the parent of the Module to which it is connected. I.e. they only extract heat “from below” but accumulate it in their own thermal mass until the layer “above” them will extract their heat. Therefore, the ‘top level Module’ (i.e. one without a parent) cannot have a Coolsystem, since it would just keep heating up. This top level must have an HVAC_Coolsystem (see below).
+A `Coolsystem` only cools the child SUs and must be cooled by the `Coolsystem` of the parent of the Module to which it is connected. I.e. they only extract heat “from below” but accumulate it in their own thermal mass until the layer “above” them will extract their heat. Therefore, the ‘top level Module’ (i.e. one without a parent) cannot have a Coolsystem, since it would just keep heating up. This top level must have an HVAC_Coolsystem (see below).
 
 The Coolant in the coolsystem has a temperature, which is the temperature of the Module (or rather, the temperature of the module is the temperature of its coolsystem). The temperature will change due to heat exchange with the child SUs, neighbouring Modules and parent Module.
 
@@ -137,7 +140,7 @@ An open coolsystem does not require operating power (since it has no fan).
 
 ### CoolSystem_HVAC
 
-This child-class extends a conventional CoolSystem and must be used by the top-level Module (or a Battery), which does not have a parent. Therefore, this coolsystem can cool itself by exchanging heat with the environment.
+This child-class extends a conventional `CoolSystem` and must be used by the top-level Module (or a Battery), which does not have a parent. Therefore, this coolsystem can cool itself by exchanging heat with the environment.
 
 It has an AC unit to cool down itself from the environment. The amount of cooling we get from the environment can be controlled similar to the controls of the fan (but note that here we control the cooling power, not some flow rate). The heat exchange with the environment can happen in two ways:
 - If the environment is cold enough, we simply suck in a volume of cold air corresponding to the cooling power we want. The operating power of the AC unit is then the power needed to suck in this air over the given time period and cross section (similar to how the operating power of a conventional CoolSystem is calculated)
@@ -146,15 +149,15 @@ It has an AC unit to cool down itself from the environment. The amount of coolin
 On top of all the convention data storage, HVAC systems also store the heat exchange with the environment (i.e. the cooling power from the AC unit) and the operating power of the AC unit. Note that these are stored separately to the heat extracted from the child SUs and the operating power of the fan to cool the child SUs.
 
 ### Cycler
-Cycler implements functions to load a StorageUnit (SU) with a constant current or constant voltage.
+`Cycler` implements functions to load a `StorageUnit` with a constant current or constant voltage.
 
-There is a question about what to do with voltage limits of potential children in the SU. E.g. if the SU of the cycler is a series-module, should we stop when one cell in the module reaches a voltage limit (Vmax or Vmin), or do we keep going until the entire module has reached its voltage limit? This is decided by the fied ‘diagnostic’, which is a Boolean. If it is true, cycling will be interrupted when an individual cell’s voltage limit is reached. This might be preferable, e.g. if you are simply fully charging and discharging a large battery, then you probably are almost fully charged when the first cell reaches its voltage limit so you can just carry on discharging. Therefore, no fault is thrown but the CC or CV function is simply terminated (and reports that this is what happens).
+There is a question about what to do with voltage limits of potential children in the SU. E.g. if the SU of the `Cycler` is a series-module, should we stop when one cell in the module reaches a voltage limit (Vmax or Vmin), or do we keep going until the entire module has reached its voltage limit? This is decided by the fied `diagnostic`, which is a Boolean. If it is true, cycling will be interrupted when an individual cell’s voltage limit is reached. This might be preferable, e.g. if you are simply fully charging and discharging a large battery, then you probably are almost fully charged when the first cell reaches its voltage limit so you can just carry on discharging. Therefore, no fault is thrown but the CC or CV function is simply terminated (and reports that this is what happens).
 
-If it is false, you don’t check the voltage limits of individual cells during cycling. However, when a cell reaches a VMIN or VMAX safety limit, a ‘hard fault’ is thrown (an error is thrown by the cell, which is simply passed on and will probably cause the code to crash unless higher-level functions deal with it).
+If it is false, you don’t check the voltage limits of individual cells during cycling. However, when a cell reaches a `VMIN` or `VMAX` safety limit, a ‘hard fault’ is thrown (an error is thrown by the cell, which is simply passed on and will probably cause the code to crash unless higher-level functions deal with it).
 
 The main function in Cycler is CC. It has an auxiliary function to apply the specified current to the SU (which will detect if this will exceed a voltage limit and terminate immediately if it does). Otherwise, CC will keep integrating over time until the specified voltage or time limit is reached. As mentioned, if diagnostic is true, then you will also stop as soon as one cell in the StorageUnit reaches its limit.
 
-The function CC also controls the number of time steps taken at once (see Module_s). It will start with one at a time, but if we are still far from any limit, it will be increased to a maximum of 10. As we approach the set limit, we will reduce it back to 1. There are a number of issues to bear in mind in relation to this ‘N’ (number of time steps taken at once):
+The function CC also controls the number of time steps taken at once (see Module_s). It will start with one at a time, but if we are still far from any limit, it will be increased to a maximum of 10. As we approach the set limit, we will reduce it back to 1. There are a number of issues to bear in mind in relation to this `N` (number of time steps taken at once):
 
 1. During discharge the OCV curve is very steep so you have to reduce N long before you get to the minimum voltage of a cell. You should do this based on the voltage of the cell connected to the StorageUnit with the lowest voltage (since a small cell-to-cell variation will mean that the weakest cell will already be on the ‘steep’ part while the overall StorageUnit will still be on the flat part)
 2. During charge, you can use the total SU voltage since the OCV curve is fairly steep (so small cell-to-cell variations won’t lead to very different cell voltages).
@@ -170,7 +173,7 @@ There is a function to do a CV, but that function should only be used for indivi
 
 ### Procedure 
 
-Procedure is a very ‘loose’ class (as in, it has got very few class variables), it more a grouping of functions. In general, Procedure implements degradation procedures as you would program them on a battery tester. There are three types of functions:
+Procedure is a very _loose_ class (as in, it has got very few class variables), it more a grouping of functions. In general, Procedure implements degradation procedures as you would program them on a battery tester. There are three types of functions:
 
 ***Degradation experiments***
 - Cycle Age: continuously cycle a StorageUnit with the same cycle
@@ -189,6 +192,7 @@ Procedure is a very ‘loose’ class (as in, it has got very few class variable
 Check-ups take quite some time to do (because you want to know the capacity of every cell of the entire battery). So from the degradation function, you make a copy of the total battery, start a new thread and do the checkup on the copy on the separate thread. This way, the main degradation function can continue straight away. [Note you do need to use some mutex to ensure two concurrent check-ups don’t write data at the same time to the same file].
 
 The following files are written (where xxx is a user-defined prefix):
+*Data storage functions are updated and we currently do not use seperators.*
 
 1. xxx_cellStats: This file contains the usage statistics of every cell of the StorageUnit. There is one column per cell (the same order as xxx_checkUp so you can get the cell IDs from there). There is one row per bin value of a histogram.	
 The first column gives an identification number indicating which histogram this is (5 = current, 6 = voltage, 7 = temperature). The numbers in the columns indicate the total number of datapoints in this bin. The edges of the bins are not written in this document since they are the same for every cell. Instead, they are written once in the document histogram_edges.csv. If you need to update the edges because you changed the code, run the unit test of the Cycler. The function test_Cycler_writeData will write a number of documents called ‘yyyy_cellStats.csv’. In these documents, rows 109 to 208 contain the edges of the bins so you should copy these rows (and all 3 columns) to the histogram_edges document.
