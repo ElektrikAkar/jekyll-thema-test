@@ -5,7 +5,7 @@ nav_order: 1
 ---
 
 
-# Using SLIDE Software
+# Using SLIDE-PACK
 
 [Overall Approach](2_overall_approach.md)\
 [Individual Classes](3_individual_classes.md)\
