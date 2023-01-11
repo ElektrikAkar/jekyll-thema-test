@@ -15,64 +15,13 @@ This section explains how currents and voltages are calculated throughout the ba
 
 The Cycler will set a certain current to the total Battery (which is the current on the DC bar), and the Battery will transfer this command to its Module. Then Modules are responsible for allocating this current to their ‘children’ (i.e. the things of which this module is made up). So the Module_s will set this current to all parallel modules. Then each Module_p will allocate the total current to their individual cells to ensure the 5 cell voltages of each parallel module are the same, while the sum of the 5 cell currents equals the total current. This is graphically shown below, where blue arrows are invoking functions to ‘lower levels’.
 
-```mermaid
-flowchart LR
-    subgraph Cycler
-    A["su->setCurrent(I_total)"]
-    end
-    subgraph Battery
-    B["Call
-        Module_s::setCurrent(I_total)"]
-    end
-    subgraph Module_s
-    C["For each parallel 
-        module call 
-        Module_p::setCurrent(I_total)"]
-    end
-    subgraph Module_p
-    D1["Calculate currents in all 
-        cells in module 1 and call
-        Cell::setCurrent(I_cell)"]
-    D2["..."]
-    D3["Calculate currents in all 
-        cells in module N and call
-        Cell::setCurrent(I_cell)"]
-    end
-    subgraph Cell
-        subgraph Cells of module 1
-            E1["Calculate currents in all
-                cells in module 1 and call 
-                Cell::setCurrent(Icell)"]
-            E2["..."]
-            E3["Calculate currents in all
-                cells in module M and call 
-                Cell::setCurrent(Icell)"]
-        end
-    E4["..."]
-    E5["Calculate currents in all
-        cells in module N and call 
-        Cell::setCurrent(Icell)"]
-    E6["..."]
-    E7["Calculate currents in all
-        cells in module N and call 
-        Cell::setCurrent(Icell)"]
-    end
-    A-->B
-    B-->C
-    C-->D1 & D2 & D3
-    D1-->E1 & E2 & E3
-    D2-->E4
-    D3-->E5 & E6 & E7
-```
-
 ![](img/setCurrent.svg){:width="100%" }
-![](img/setting_current.png){:width="60%" }
 
 ***Getting the voltage***
 
 If the Cycler asks the voltage of the Battery (e.g. to determine whether to stop charging), the Battery will pass on this request to the Module_s. In a series module, the voltage is the sum of the voltages of its children, so this module will ask the voltage of each Module_p, add them up, return them to the Battery, which in turn passes it on to the Cycler. When each Module_p calculates its voltage, it asks the voltages of the Cells of which it is made up, and takes the average. In Cell, there is a function to calculate the cell voltage as a function of the cell current, SoC, temperature, etc. This is illustrated graphically below, where blue arrows are invoking functions to ‘lower levels’ while orange arrows are returning results to ‘higher levels’.
 
-![](img/getting_voltage.png){:width="60%" }
+![](img/getV.svg){:width="100%" }
 
 ***Time integration***
 
@@ -84,7 +33,7 @@ Once all cells of a parallel module have finished their time integration, the co
 
 If all parallel modules have finished redistributing their currents, the code returns to the series module. The series module does not need to do anything, and returns back to the Battery time integration function. That function will now call the thermal model, which is explained in the next section and indicated by the green arrow in the graph.
 
-![](img/time_integration.png){:width="60%" }
+![](img/timeStep.svg){:width="100%" }
 
 ### Thermal
 
@@ -128,7 +77,7 @@ The full flow of the program is therefore:
 
 The graph below illustrates this process. The four steps in the layers are coloured in blue, purple, red and yellow. Note that we have only displayed the flow for one parallel module and one cell in this module, although in reality it will be repeated for each cell in the parallel module, and each parallel module in the series module.
 
-![](img/process.png){:width="60%" }
+![](img/process.svg){:width="100%" }
 
 ### Data Storage
 
@@ -137,6 +86,6 @@ Data storage is completely analogous to setting the current. It is a simple top-
 The only difference is that if a Module (or Battery) has a CoolSystem, it will also invoke storeData on its coolsystem
 
 
-![](img/data_storage.png){:width="60%" }
+![](img/storeData.svg){:width="100%" }
 
 
